@@ -13,11 +13,16 @@ public class MoveToDoorAgent : Agent
 
     [SerializeField] private float speed = 6f;  // Vitesse de déplacement de l'agent
 
+    private bool interrupteurActivé = false;
+
     private MeshRenderer porteRenderer;  // Renderer pour la porte (pour la modification de couleure)
+    private MeshRenderer interrupteurRenderer;  // Renderer pour l'interrupteur (pour la modification de couleure)
+   [SerializeField] private MeshRenderer floorRenderer;  // Renderer pour le sol (pour la modification de couleure)
 
     public override void Initialize()
     {
         porteRenderer = porteOuverte.GetComponent<MeshRenderer>();  // Obtient le MeshRenderer de la porte
+        interrupteurRenderer = interrupteur.GetComponent<MeshRenderer>();
     }
 
     public override void OnActionReceived(ActionBuffers actions)
@@ -30,6 +35,9 @@ public class MoveToDoorAgent : Agent
         // Déplacement de l'agent en fonction des actions
         Vector3 moveVector = new Vector3(moveX, 0, moveZ) * speed * Time.deltaTime;
         transform.Translate(moveVector, Space.World);
+
+        // Pénalité à chaque pas pour encourager des solutions rapides
+        AddReward(-0.01f);
 
         Debug.Log(actions.DiscreteActions[0]);
     }
@@ -44,54 +52,53 @@ public class MoveToDoorAgent : Agent
 
     public override void OnEpisodeBegin()
     {
+        //floorRenderer.material.color = Color.gray;
         // Réinitialise la position de l'agent et de l'interrupteur
-        transform.localPosition = new Vector3(1f, 0.67f, -2);
+        interrupteurActivé = false;
+        transform.localPosition = new Vector3(1f, 7, -2);
         porteRenderer.material.color = Color.red; // Réinitialise la couleur de la porte à rouge
+        interrupteurRenderer.material.color = Color.green;
     }
 
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.CompareTag("mur"))
+         if (other.CompareTag("interrupteur") && !interrupteurActivé) // pour qu'il n'aille pas touché plusieurs fois l'interrupteur pour les recompenses
         {
-            AddReward(-1.0f); // Pénalité pour avoir touché un mur
-            EndEpisode(); // Termine l'épisode
-        }
-        else if (other.CompareTag("interrupteur"))
-        {
-            AddReward(0.1f); // Récompense pour avoir touché l'interrupteur
+            interrupteurActivé = true;
+            AddReward(2f); // Récompense pour avoir touché l'interrupteur
             porteRenderer.material.color = Color.green;   // Change la couleur de la porte à vert pour indiquer l'ouverture
+            interrupteurRenderer.material.color = Color.gray; //eteint l'interrupteur
         }
         else if (other.CompareTag("door"))
         {
-            AddReward(1.0f); // Grande récompense pour avoir réussi à sortir
+            if (interrupteurActivé)
+            {
+                AddReward(10.0f); // Récompense pour réussir à sortir après activation de l'interrupteur
+                floorRenderer.material.color = Color.green;
+            }
+            else
+            {
+                AddReward(-2f); // Pénalité pour atteindre la porte sans activation de l'interrupteur
+                floorRenderer.material.color = Color.blue; // Change la couleur du sol à bleu
+            }
             EndEpisode(); // Termine l'épisode
         }
     }
 
-  /*  private void OnCollisionEnter(Collision collision)
-    {
-        Debug.Log("Collision Detected with: " + collision.gameObject.name); // Log pour voir avec quel objet la collision se produit
+        private void OnTriggerExit(Collider other)
+       {
 
-        if (collision.gameObject.CompareTag("mur"))
+        Debug.Log("Touche");
+        if (other.CompareTag("mur"))
         {
-            Debug.Log("Collided with Wall"); // Log spécifique pour la collision avec un mur
-            AddReward(-1.0f); // Pénalité pour avoir touché un mur
+            AddReward(-3.0f); // Pénalité pour avoir touché un mur
+            floorRenderer.material.color = Color.red; // Change la couleur du sol à rouge
             EndEpisode(); // Termine l'épisode
         }
-        else if (collision.gameObject.CompareTag("interrupteur"))
-        {
-            Debug.Log("Collided with Switch"); // Log spécifique pour la collision avec l'interrupteur
-            AddReward(0.1f); // Récompense pour avoir touché l'interrupteur
-            porteRenderer.material.color = Color.green; // Change la couleur de la porte à vert pour indiquer l'ouverture
-        }
-        else if (collision.gameObject.CompareTag("door"))
-        {
-            Debug.Log("Collided with Door"); // Log spécifique pour la collision avec la porte
-            AddReward(1.0f); // Grande récompense pour avoir réussi à sortir
-            EndEpisode(); // Termine l'épisode
-        }
-    }*/
+       
+    }
+
 
     //pour tester manuellement
     public override void Heuristic(in ActionBuffers actionsOut)

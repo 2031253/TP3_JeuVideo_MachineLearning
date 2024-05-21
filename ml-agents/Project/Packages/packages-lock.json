@@ -78,7 +78,7 @@
       "url": "https://packages.unity.com"
     },
     "com.unity.ml-agents": {
-      "version": "file:C:/Users/Morel/Documents/AAAOthniel/Tp3JeuVIdeo/Tp3JeuVideo2Final/ml-agents/com.unity.ml-agents",
+      "version": "file:C:/Users/2031253/Documents/Tp3JeuVideo_Azonglahoun_Othniel/TP3_JeuVideo_MachineLearning/ml-agents/com.unity.ml-agents",
       "depth": 0,
       "source": "local",
       "dependencies": {
@@ -89,7 +89,7 @@
       }
     },
     "com.unity.ml-agents.extensions": {
-      "version": "file:C:/Users/Morel/Documents/AAAOthniel/Tp3JeuVIdeo/Tp3JeuVideo2Final/ml-agents/com.unity.ml-agents.extensions",
+      "version": "file:C:/Users/2031253/Documents/Tp3JeuVideo_Azonglahoun_Othniel/TP3_JeuVideo_MachineLearning/ml-agents/com.unity.ml-agents.extensions",
       "depth": 0,
       "source": "local",
       "dependencies": {
